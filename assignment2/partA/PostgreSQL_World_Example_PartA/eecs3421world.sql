@@ -5388,5 +5388,8 @@ ALTER TABLE ONLY eecs3421countrylanguage
 
 ALTER TABLE ONLY eecs3421city
     ADD CONSTRAINT country_countrycode_fkey FOREIGN KEY (countrycode) REFERENCES eecs3421country(code);
-	
+
+SET search_path TO world;
 COMMIT;
+
+
