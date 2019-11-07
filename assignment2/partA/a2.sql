@@ -10,7 +10,10 @@
 --Query 1 statements
 INSERT INTO query1 (
 	SELECT pname, cname, tname FROM champion, tournament, country, player
-	WHERE champion.tid = tournament.tid AND tournament.cid = country.cid AND country.cid = player.cid AND champion.pid = player.pid
+	WHERE champion.tid = tournament.tid 
+		AND tournament.cid = country.cid 
+		AND country.cid = player.cid 
+		AND champion.pid = player.pid
 	ORDER BY pname ASC
 );
 
@@ -30,21 +33,62 @@ INSERT INTO query2 (
 )
 --Query 3 statements
 INSERT INTO query3 (
+	-- eid, year, courtid, playerid, opponentid, duration
 	CREATE VIEW winnerEvents AS
-		-- blah
-		
+		SELECT 	eid, 
+				year, 
+				courtid, 
+				winid AS playerid, 
+				lossid AS opponentid,
+				duration
+		FROM event;
+
+	-- eid, year, courtid, playerid, opponentid, duration
 	CREATE VIEW loserEvents AS
-		-- blah
-	
+		SELECT 	eid, 
+				year, 
+				courtid, 
+				lossid AS playerid, 
+				winid AS opponentid,
+				duration
+		FROM event;
+
+	-- eid, year, courtid, playerid, opponentid, duration
 	CREATE VIEW p1p2Events AS
-		-- blah
-		
-	SELECT -- blah
+		SELECT *
+		FROM (SELECT * FROM winnerEvents)
+			 UNION 
+			 (SELECT * FROM loserEvents) AS E; 
+
+	-- Opid, Opname, Oglobalrank, Ocid
+	CREATE VIEW opponentPlayer AS
+		SELECT 	pid AS Opid,
+				pname AS Opname,
+				globalrank AS Oglobalrank,
+				cid AS Ocid
+		FROM player
 	
+	-- eid, year, courtid, playerid, opponentid, duration
+	CREATE VIEW p1p2EventPlayer AS
+		SELECT *
+		FROM p1p2Events E 
+			JOIN player P ON E.playerid = P.pid
+			JOIN opponentPlayer OP ON E.opponentid = OP.Opid
+	
+	-- p1id, p1name, p2id, p2name
+	SELECT 	E.pid AS p1id,
+			E.pname AS p1name,
+			E.Opid AS p2id,
+			E.Opname AS p2name  
+	FROM p1p2EventPlayer E
+	GROUP BY E.pid, MAX(E.Oglobalrank)
+	ORDER BY p1name ASC;
 	
 	DROP VIEW IF EXISTS winnerEvents;
 	DROP VIEW IF EXISTS loserEvents;
 	DROP VIEW IF EXISTS p1p2Events;
+	DROP VIEW IF EXISTS opponentPlayer;
+	DROP VIEW IF EXISTS p1p2EventPlayer;
 )
 
 --Query 4 statements
