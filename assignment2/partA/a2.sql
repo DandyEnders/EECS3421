@@ -30,7 +30,7 @@ INSERT INTO query2 (
 	FROM sumCaps;
 
 	DROP VIEW IF EXISTS sumCaps;
-)
+);
 --Query 3 statements
 INSERT INTO query3 (
 	-- eid, year, courtid, playerid, opponentid, duration
@@ -66,14 +66,14 @@ INSERT INTO query3 (
 				pname AS Opname,
 				globalrank AS Oglobalrank,
 				cid AS Ocid
-		FROM player
+		FROM player;
 	
 	-- eid, year, courtid, playerid, opponentid, duration
 	CREATE VIEW p1p2EventPlayer AS
 		SELECT *
 		FROM p1p2Events E 
 			JOIN player P ON E.playerid = P.pid
-			JOIN opponentPlayer OP ON E.opponentid = OP.Opid
+			JOIN opponentPlayer OP ON E.opponentid = OP.Opid;
 	
 	-- p1id, p1name, p2id, p2name
 	SELECT 	E.pid AS p1id,
@@ -89,10 +89,30 @@ INSERT INTO query3 (
 	DROP VIEW IF EXISTS p1p2Events;
 	DROP VIEW IF EXISTS opponentPlayer;
 	DROP VIEW IF EXISTS p1p2EventPlayer;
-)
+);
 
 --Query 4 statements
-INSERT INTO query4
+INSERT INTO query4 (
+	CREATE VIEW champTournamentPlayer AS
+		SELECT C.pid AS pid
+			   T.tid AS tid
+		FROM champion C
+			JOIN tournament T ON C.tid = T.tid
+			JOIN player P ON C.pid = P.pid;
+	
+	CREATE VIEW playerParticipation AS
+		SELECT pid, COUNT(tid) AS tcount
+		FROM champTournamentPlayer T
+		GROUP BY pid
+	
+	SELECT pid, tcount
+	FROM playerPartification
+	WHERE tcount = (SELECT COUNT(*) 
+					FROM tournament) AS C;
+	
+	DROP VIEW IF EXISTS champTournamentPlayer;
+	DROP VIEW IF EXISTS playerParticipation;
+);
 
 --Query 5 statements
 INSERT INTO query5
