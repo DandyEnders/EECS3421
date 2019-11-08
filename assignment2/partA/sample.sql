@@ -484,3 +484,5 @@ COMMIT;
 \i a2.sql
 
 --COMMIT;
+
+\i check_queries.sql

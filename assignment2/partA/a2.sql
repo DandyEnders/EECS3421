@@ -10,8 +10,12 @@ SET search_path TO A2;
 --Query 1 statements
 BEGIN; --------------------------------------------------
 INSERT INTO query1
-    SELECT pname, cname, tname FROM champion, tournament, country, player
-    WHERE champion.tid = tournament.tid AND tournament.cid = country.cid AND country.cid = player.cid AND champion.pid = player.pid
+    SELECT pname, cname, tname 
+    FROM champion, tournament, country, player
+    WHERE champion.tid = tournament.tid 
+        AND tournament.cid = country.cid 
+        AND country.cid = player.cid 
+        AND champion.pid = player.pid
     ORDER BY pname ASC
 ;
 COMMIT; -------------------------------------------------
@@ -46,10 +50,7 @@ CREATE VIEW winnerEvents AS
             lossid AS opponentid,
             duration
     FROM event;
-COMMIT; -------------------------------------------------
 
-
-BEGIN; --------------------------------------------------
 -- eid, year, courtid, playerid, opponentid, duration
 CREATE VIEW loserEvents AS
     SELECT 	eid, 
@@ -94,6 +95,7 @@ INSERT INTO query3
             E.Opname AS p2name  
     FROM p1p2EventPlayer E 
         JOIN p1GlobalRank GR ON E.pid = GR.pid
+    WHERE E.Oglobalrank = GR.maxGR
     ORDER BY p1name ASC;
 
 DROP VIEW IF EXISTS winnerEvents CASCADE;
