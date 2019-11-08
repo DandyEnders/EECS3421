@@ -478,3 +478,9 @@ COPY event (eid, year, courtid, winid, lossid, duration) FROM stdin;
 
 
 COMMIT;
+
+--BEGIN;
+
+\i a2.sql
+
+--COMMIT;
