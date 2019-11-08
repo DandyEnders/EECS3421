@@ -5,6 +5,7 @@
 -- Finland, http://www.stat.fi/worldinfigures.
 --
 
+
 BEGIN;
 
 DROP SCHEMA IF EXISTS sample CASCADE;
