@@ -1,4 +1,4 @@
-﻿SET search_path TO A2;
+SET search_path TO A2;
 -- Add below your SQL statements. 
 -- For each of the queries below, your final statement should populate the respective answer table (queryX) with the correct tuples. It should look something like:
 -- INSERT INTO queryX (SELECT … <complete your SQL query here> …)
@@ -10,10 +10,7 @@
 --Query 1 statements
 INSERT INTO query1 (
 	SELECT pname, cname, tname FROM champion, tournament, country, player
-	WHERE champion.tid = tournament.tid 
-		AND tournament.cid = country.cid 
-		AND country.cid = player.cid 
-		AND champion.pid = player.pid
+	WHERE champion.tid = tournament.tid AND tournament.cid = country.cid AND country.cid = player.cid AND champion.pid = player.pid
 	ORDER BY pname ASC
 );
 
@@ -30,7 +27,7 @@ INSERT INTO query2 (
 	FROM sumCaps;
 
 	DROP VIEW IF EXISTS sumCaps;
-);
+)
 --Query 3 statements
 INSERT INTO query3 (
 	-- eid, year, courtid, playerid, opponentid, duration
@@ -84,12 +81,14 @@ INSERT INTO query3 (
 	GROUP BY E.pid, MAX(E.Oglobalrank)
 	ORDER BY p1name ASC;
 	
-	DROP VIEW IF EXISTS winnerEvents;
+	c winnerEvents;
 	DROP VIEW IF EXISTS loserEvents;
 	DROP VIEW IF EXISTS p1p2Events;
 	DROP VIEW IF EXISTS opponentPlayer;
 	DROP VIEW IF EXISTS p1p2EventPlayer;
 );
+
+)
 
 --Query 4 statements
 INSERT INTO query4 (
@@ -115,10 +114,34 @@ INSERT INTO query4 (
 );
 
 --Query 5 statements
-INSERT INTO query5
+INSERT INTO query5 Select MAX(avgwins) FROM((Select pid, pname, AVG(wins) AS avgwins
+                    FROM record, player
+                    WHERE record.pid = player.pid AND year BETWEEN 2011 AND 2014 
+                    LIMIT 10
+                    ORDER BY avgwins DESC));
 
 --Query 6 statements
-INSERT INTO query6
+INSERT INTO query6 (CREATE VIEW playerswithdecreasingwins AS 
+                   SELECT pid
+                   FROM record AS r1, record AS r2 player
+                   WHERE r1.pid = r2.pid AND r1.year < r2.year AND r1.wins >= r2.wins  AND year BETWEEN 2011 AND 2014;
+                   
+                   CREATE VIEW increasingwins AS
+                   (SELECT pid
+                   FROM player)
+                   EXCEPT
+                   (SELECT pid FROM playerswithdecreasingwins);
+                   
+                   SELECT pid, pname
+                   FROM increasingwins, player
+                   WHERE increasingwins.pid = player.pid
+                   ORDER BY pname;
+                   
+                   DROP VIEW IF EXISTS playerswithdecreasingwins;
+                   DROP VIEW IF EXISTS increasingwins; 
+                   
+                   );
+                   
 
 --Query 7 statements
 INSERT INTO query7
