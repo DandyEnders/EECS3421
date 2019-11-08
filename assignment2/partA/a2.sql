@@ -104,10 +104,11 @@ INSERT INTO query4 (
 		FROM champTournamentPlayer T
 		GROUP BY pid
 	
-	SELECT pid, tcount
+	SELECT pid, pname
 	FROM playerPartification
 	WHERE tcount = (SELECT COUNT(*) 
-					FROM tournament) AS C;
+					FROM tournament) AS C
+	ORDER BY pname ASC;
 	
 	DROP VIEW IF EXISTS champTournamentPlayer;
 	DROP VIEW IF EXISTS playerParticipation;
@@ -143,11 +144,42 @@ INSERT INTO query6 (CREATE VIEW playerswithdecreasingwins AS
                    );
                    
 
+
 --Query 7 statements
 INSERT INTO query7
 
 --Query 8 statements
-INSERT INTO query8
+INSERT INTO query8 (
+	CREATE VIEW winnerEvents AS
+		SELECT 	eid, 
+				year, 
+				courtid, 
+				winid AS playerid, 
+				lossid AS opponentid,
+				duration
+		FROM event;
+
+	-- eid, year, courtid, playerid, opponentid, duration
+	CREATE VIEW loserEvents AS
+		SELECT 	eid, 
+				year, 
+				courtid, 
+				lossid AS playerid, 
+				winid AS opponentid,
+				duration
+		FROM event;
+
+	-- eid, year, courtid, playerid, opponentid, duration
+	CREATE VIEW p1p2Events AS
+		SELECT *
+		FROM (SELECT * FROM winnerEvents)
+			 UNION 
+			 (SELECT * FROM loserEvents) AS E; 
+	
+		DROP VIEW IF EXISTS winnerEvents;
+		DROP VIEW IF EXISTS loserEvents;
+		DROP VIEW IF EXISTS p1p2Events;
+);
 
 --Query 9 statements
 INSERT INTO query9
