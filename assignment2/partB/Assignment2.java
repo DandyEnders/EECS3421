@@ -61,11 +61,39 @@ public class Assignment2 {
     //Closes the connection. Returns true if closure was sucessful
     public boolean disconnectDB(){
         connection.close();
-        return false;    
+           if(connection.isClosed()){
+        return true;
+	}
+        else {
+        return false; 
+	}     
     }
     
     public boolean insertPlayer(int pid, String pname, int globalRank, int cid) {
-        return false;
+         try {
+		
+ 			// Load JDBC driver
+			Class.forName("org.postgresql.Driver");
+        
+            connection = DriverManager.getConnection("jdbc:postgresql://db:5432/<dbname>", "<username>", "<password>");
+            
+            
+        
+        //Create a Statement for executing SQL queries
+			sql = connection.createStatement(); 
+			
+        String sqltext;
+        
+        sqltext = "INSERT INTO Player   " + 
+                               "VALUES (4, 'Shane', 2, 4561)";
+        System.out.println("Executing this command: \n" + sqlText.replaceAll("\\s+", " ") + "\n");
+        sql.executeUpdate(sqltext); 
+        connection.close(); 
+	} catch (SQLException e) {
+
+                        System.out.println("Query Exection Failed!");
+                        e.printStackTrace();
+                        return;
     }
   
     public int getChampions(int pid) {
