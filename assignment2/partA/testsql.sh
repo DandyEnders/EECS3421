@@ -1,1 +1,1 @@
-psql -h db -q --file sample.sql
+psql -h db -b --file sample.sql

@@ -7,7 +7,7 @@ SET search_path TO A2;
 -- You can use the "\i a2.sql" command in psql to execute the SQL commands in this file.
 -- Good Luck!
 
---Query 1 statements
+--Query 1 statements CHECKED
 BEGIN; --------------------------------------------------
 INSERT INTO query1
     SELECT pname, cname, tname 
@@ -21,25 +21,25 @@ INSERT INTO query1
 COMMIT; -------------------------------------------------
 
 
---Query 2 statements
+--Query 2 statements CHECKED
 BEGIN; --------------------------------------------------
 CREATE VIEW sumCaps AS 
-    SELECT tname, sum(capacity) AS sumCapacity
+    SELECT tname, sum(court.capacity) AS sumCapacity
     FROM tournament, court
     WHERE tournament.tid = court.tid
-    GROUP By tname
-    ORDER BY tname ASC;
+    GROUP By tname;
 
 INSERT INTO query2
-    SELECT tname, max(sumCapacity) AS totalCapacity
+    SELECT tname, sumCapacity AS totalCapacity
     FROM sumCaps
-    GROUP BY tname;
+    WHERE sumCapacity >= ALL(SELECT sumCapacity FROM sumCaps)
+    ORDER BY tname ASC;
 
 DROP VIEW IF EXISTS sumCaps CASCADE;
 COMMIT; -------------------------------------------------
 
 
---Query 3 statements
+--Query 3 statements UNCHECKED
 BEGIN; --------------------------------------------------
 -- eid, year, courtid, playerid, opponentid, duration
 CREATE VIEW winnerEvents AS
@@ -108,7 +108,7 @@ DROP VIEW IF EXISTS p1GlobalRank CASCADE;
 COMMIT; -------------------------------------------------
 
 
---Query 4 statements
+--Query 4 statements UNCHECKED
 BEGIN; --------------------------------------------------
 CREATE VIEW champTournamentPlayer AS
     SELECT C.pid, P.pname, C.tid
@@ -132,7 +132,7 @@ DROP VIEW IF EXISTS playerParticipation CASCADE;
 COMMIT; -------------------------------------------------
 
 
---Query 5 statements
+--Query 5 statements UNCHECKED
 BEGIN; --------------------------------------------------
 INSERT INTO query5 
     SELECT MAX(avgwins) 
@@ -147,7 +147,7 @@ INSERT INTO query5
 COMMIT; -------------------------------------------------
 
 
---Query 6 statements
+--Query 6 statements UNCHECKED
 BEGIN; --------------------------------------------------
 CREATE VIEW playerswithdecreasingwins AS 
     SELECT P.pid
@@ -176,13 +176,13 @@ DROP VIEW IF EXISTS increasingwins CASCADE;
 COMMIT; -------------------------------------------------
 
 
---Query 7 statements
+--Query 7 statements UNCHECKED
 BEGIN; --------------------------------------------------
 --INSERT INTO query7
 COMMIT; -------------------------------------------------
 
 
---Query 8 statements\
+--Query 8 statements UNCHECKED
 BEGIN; --------------------------------------------------
 
 CREATE VIEW winnerEvents AS
@@ -211,22 +211,97 @@ CREATE VIEW p1p2Events AS
             UNION 
             (SELECT * FROM loserEvents)) AS E; 
 
---INSERT INTO query8 
+CREATE VIEW playerCountry AS
+    SELECT P.pid, P.pname, C.cname
+    FROM player P
+        JOIN country C ON P.cid = C.cid;
+
+INSERT INTO query8 
+    SELECT 
+        PlayerC.pname AS p1name, 
+        OpponentC.pname AS p2name,
+        PlayerC.cname as cname
+    FROM p1p2Events E
+        JOIN playerCountry PlayerC ON E.playerid = PlayerC.pid
+        JOIN playerCountry OpponentC ON  E.opponentid = OpponentC.pid
+    WHERE PlayerC.cname = OpponentC.cname 
+    ORDER BY cname ASC, p1name DESC;
 
 DROP VIEW IF EXISTS winnerEvents CASCADE;
 DROP VIEW IF EXISTS loserEvents CASCADE;
 DROP VIEW IF EXISTS p1p2Events CASCADE;
+DROP VIEW IF EXISTS playerCountry CASCADE;
 
 COMMIT; -------------------------------------------------
 
 
---Query 9 statements
+--Query 9 statements CHECKED
 BEGIN; --------------------------------------------------
---INSERT INTO query9
+CREATE VIEW countryChampions AS
+    SELECT 
+        C.cname AS cname,
+        COUNT(CH.tid) as champions
+    FROM country C
+        JOIN player P ON C.cid = P.cid
+        JOIN champion CH ON P.pid = CH.pid 
+    GROUP BY C.cname;
+
+INSERT INTO query9
+    SELECT
+        C.cname AS cname,
+        c.champions AS champions
+    FROM countryChampions C
+    WHERE C.champions >= ALL(SELECT champions FROM countryChampions)
+    ORDER BY cname DESC;
+
+DROP VIEW IF EXISTS countryChampions CASCADE;
 COMMIT; -------------------------------------------------
 
 
---Query 10 statements
+--Query 10 statements UNCHECKED
 BEGIN; --------------------------------------------------
---INSERT INTO query10
+
+CREATE VIEW winnerEvents AS
+    SELECT 	eid, 
+            year, 
+            courtid, 
+            winid AS playerid, 
+            lossid AS opponentid,
+            duration
+    FROM event;
+
+-- eid, year, courtid, playerid, opponentid, duration
+CREATE VIEW loserEvents AS
+    SELECT 	eid, 
+            year, 
+            courtid, 
+            lossid AS playerid, 
+            winid AS opponentid,
+            duration
+    FROM event;
+
+-- eid, year, courtid, playerid, opponentid, duration
+CREATE VIEW p1p2Events AS
+    SELECT *
+    FROM ((SELECT * FROM winnerEvents)
+            UNION 
+            (SELECT * FROM loserEvents)) AS E;
+
+INSERT INTO query10
+    SELECT
+        P.pname AS pname
+    FROM player P
+        JOIN record R ON P.pid = R.pid
+        JOIN p1p2Events E ON P.pid = E.playerid
+    WHERE R.wins > R.losses
+    GROUP BY P.pname, E.year 
+    HAVING 
+        AVG(E.duration) > 200 AND
+        E.year = 2014
+    ORDER BY pname;
+
+
+DROP VIEW IF EXISTS winnerEvents CASCADE;
+DROP VIEW IF EXISTS loserEvents CASCADE;
+DROP VIEW IF EXISTS p1p2Events CASCADE;
 COMMIT; -------------------------------------------------
