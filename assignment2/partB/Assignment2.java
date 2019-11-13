@@ -85,7 +85,7 @@ public class Assignment2 {
         String sqltext;
         
         sqltext = "INSERT INTO Player   " + 
-                               "VALUES (4, 'Shane', 2, 4561)";
+                               "VALUES (4, 'Shane', 2, 4561)";                     //**possibly wrong
         System.out.println("Executing this command: \n" + sqlText.replaceAll("\\s+", " ") + "\n");
         sql.executeUpdate(sqltext); 
         connection.close(); 
@@ -97,11 +97,46 @@ public class Assignment2 {
     }
   
     public int getChampions(int pid) {
-	      return 0;  
+	    try {
+       Class.forName("org.postgresql.Driver");
+        
+       connection = DriverManager.getConnection("jdbc:postgresql://db:5432/<dbname>", "<username>", "<password>");
+       sql = connection.createStatement();
+         rs = sql.executeQuery("SELECT COUNT(pid) FROM player, champion WHERE player.pid = champion.pid");
+         
+        while (rs.next()) {
+        System.out.println(rs.getString(1));
+	}
+        
+        
+        rs.close();
+        sql.close();  
+        }  
     }
    
     public String getCourtInfo(int courtid){
-        return "";
+          try {
+       Class.forName("org.postgresql.Driver");
+        
+       connection = DriverManager.getConnection("jdbc:postgresql://db:5432/<dbname>", "<username>", "<password>");
+       sql = connection.createStatement();
+         rs = sql.executeQuery("SELECT courtid, courtname, capacity,tname AS tournamentname FROM court,tournament WHERE court.tid = tournament.tid"); 
+        
+         if(rs == null){
+         return "";               //returns empty string if court doesnt exist
+         }
+         while(rs.next()){
+        int courtid = rs.getInt("courtid");
+        String courtname = rs.getString("courtname");
+        int capacity = rs.getInt("capacity");
+        String tournamentname = rs.getString("tournamentname");
+        System.out.println(courtid + ":" + courtname + ":" + capacity + ":" + tournamentname);
+        
+        rs.close();
+        sql.close();
+        }
+
+    }
     }
 
     public boolean chgRecord(int pid, int year, int wins, int losses){
