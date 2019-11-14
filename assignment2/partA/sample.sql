@@ -421,12 +421,22 @@ COPY player (pid, pname, globalrank, cid) FROM stdin;
 --
 
 COPY record (pid, year, wins, losses) FROM stdin;
-2	2011	4	0
 1	2012	7	2
+1	2013	6	0
+1	2014	1	0
+1	2015	4	0
+2	2011	1	0
+2	2012	2	0
+2	2013	3	0
+2	2014	4	0
+2	2015	5	0
+3	2011	1	3
+3	2012	2	3
+3	2013	3	3
+3	2014	4	3
 4	2013	0	7
-3	2016	4	3
+4	2014	1	0
 5	2015	3	2
-4	2014	5	0
 \.
 
 
@@ -463,6 +473,9 @@ COPY champion (pid, year, tid) FROM stdin;
 1	2012	2
 4	2016	4
 4	2013	3
+2	2011	2
+2	2012	3
+2	2013	4
 \.
 
 
@@ -481,6 +494,10 @@ COPY event (eid, year, courtid, winid, lossid, duration) FROM stdin;
 8	2013	1	4	5	300
 9	2014	1	1	2	700
 10	2015	1	4	5	550
+11	2014	1	2	5	10
+12	2014	1	2	5	500
+13	2014	1	2	5	1000
+14	2014	1	2	5	1500
 \.
 
 

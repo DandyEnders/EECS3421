@@ -8,7 +8,7 @@ SET search_path TO A2;
 -- Good Luck!
 
 --Query 1 statements CHECKED
-BEGIN; --------------------------------------------------
+
 INSERT INTO query1
     SELECT pname, cname, tname 
     FROM champion, tournament, country, player
@@ -18,11 +18,11 @@ INSERT INTO query1
         AND champion.pid = player.pid
     ORDER BY pname ASC
 ;
-COMMIT; -------------------------------------------------
+
 
 
 --Query 2 statements CHECKED
-BEGIN; --------------------------------------------------
+
 CREATE VIEW sumCaps AS 
     SELECT tname, sum(court.capacity) AS sumCapacity
     FROM tournament, court
@@ -36,11 +36,11 @@ INSERT INTO query2
     ORDER BY tname ASC;
 
 DROP VIEW IF EXISTS sumCaps CASCADE;
-COMMIT; -------------------------------------------------
 
 
---Query 3 statements UNCHECKED
-BEGIN; --------------------------------------------------
+
+--Query 3 statements CHECKED
+
 -- eid, year, courtid, playerid, opponentid, duration
 CREATE VIEW winnerEvents AS
     SELECT 	eid, 
@@ -89,10 +89,11 @@ CREATE VIEW p1GlobalRank AS
     GROUP BY pid;
 
 INSERT INTO query3
-    SELECT 	E.pid AS p1id,
-            E.pname AS p1name,
-            E.Opid AS p2id,
-            E.Opname AS p2name  
+    SELECT DISTINCT
+        E.pid AS p1id,
+        E.pname AS p1name,
+        E.Opid AS p2id,
+        E.Opname AS p2name
     FROM p1p2EventPlayer E 
         JOIN p1GlobalRank GR ON E.pid = GR.pid
     WHERE E.Oglobalrank = GR.maxGR
@@ -105,11 +106,11 @@ DROP VIEW IF EXISTS opponentPlayer CASCADE;
 DROP VIEW IF EXISTS p1p2EventPlayer CASCADE;
 DROP VIEW IF EXISTS p1GlobalRank CASCADE;
 
-COMMIT; -------------------------------------------------
 
 
---Query 4 statements UNCHECKED
-BEGIN; --------------------------------------------------
+
+--Query 4 statements CHECKED
+
 CREATE VIEW champTournamentPlayer AS
     SELECT C.pid, P.pname, C.tid
     FROM champion C
@@ -129,61 +130,69 @@ INSERT INTO query4
 
 DROP VIEW IF EXISTS champTournamentPlayer CASCADE;
 DROP VIEW IF EXISTS playerParticipation CASCADE;
-COMMIT; -------------------------------------------------
 
 
---Query 5 statements UNCHECKED
-BEGIN; --------------------------------------------------
+
+--Query 5 statements CHECKED
+
+
 INSERT INTO query5 
-    SELECT MAX(avgwins) 
-    FROM (  SELECT P.pid, P.pname, AVG(wins) AS avgwins
-            FROM record R, player P
-            WHERE R.pid = P.pid 
-                    AND year BETWEEN 2011 AND 2014 
-            GROUP BY P.pid, P.pname
-            ORDER BY avgwins DESC
-            LIMIT 10
-            ) AS A;
-COMMIT; -------------------------------------------------
+    SELECT
+        P.pid AS pid,
+        P.pname AS pname,
+        AVG(wins) AS avgwins
+    FROM player P
+        JOIN record R ON P.pid = R.pid 
+    WHERE R.year >= 2011 AND R.year <= 2014
+    GROUP BY P.pid, P.pname
+    HAVING AVG(wins) < MAX(wins)
+    ORDER BY avgwins DESC;
 
 
---Query 6 statements UNCHECKED
-BEGIN; --------------------------------------------------
-CREATE VIEW playerswithdecreasingwins AS 
-    SELECT P.pid
-    FROM record r1, record r2, player P
-    WHERE r1.pid = r2.pid 
-        AND r1.year < r2.year 
-        AND r1.wins >= r2.wins  
-        AND r1.year BETWEEN 2011 AND 2014
-        AND r2.year BETWEEN 2011 AND 2014;
-    
-CREATE VIEW increasingwins AS
-    (SELECT pid
-    FROM player)
-    EXCEPT
-    (SELECT pid FROM playerswithdecreasingwins);
+
+
+--Query 6 statements CHECKED
+
+CREATE VIEW increasingwins AS 
+    SELECT R1.pid
+    FROM record R1
+        JOIN record R2 ON R1.pid = R2.pid
+    WHERE 
+        R1.year < R2.year AND
+        R1.wins < R2.wins AND
+        R1.year BETWEEN 2011 AND 2014 AND
+        R2.year BETWEEN 2011 AND 2014
+    GROUP BY R1.pid
+    HAVING COUNT(R1.pid) = 6; -- 3 + 2 + 1
 
 INSERT INTO query6 
     SELECT P.pid, P.pname
-    FROM increasingwins, player P
-    WHERE increasingwins.pid = P.pid
+    FROM increasingwins W
+        JOIN player P ON W.pid = P.pid
     ORDER BY P.pname;
 
-DROP VIEW IF EXISTS playerswithdecreasingwins CASCADE;
 DROP VIEW IF EXISTS increasingwins CASCADE; 
                 
-COMMIT; -------------------------------------------------
 
 
---Query 7 statements UNCHECKED
-BEGIN; --------------------------------------------------
---INSERT INTO query7
-COMMIT; -------------------------------------------------
+
+--Query 7 statements CHECKED
 
 
---Query 8 statements UNCHECKED
-BEGIN; --------------------------------------------------
+INSERT INTO query7
+    SELECT
+        P.pname AS pname,
+        C.year AS year
+    FROM player P 
+        JOIN champion C ON P.pid = C.pid
+    GROUP BY pname, year
+    HAVING COUNT(year) >= 2
+    ORDER BY pname DESC, year DESC;
+
+
+
+--Query 8 statements CHECKED
+
 
 CREATE VIEW winnerEvents AS
     SELECT 	eid, 
@@ -217,7 +226,7 @@ CREATE VIEW playerCountry AS
         JOIN country C ON P.cid = C.cid;
 
 INSERT INTO query8 
-    SELECT 
+    SELECT DISTINCT
         PlayerC.pname AS p1name, 
         OpponentC.pname AS p2name,
         PlayerC.cname as cname
@@ -232,11 +241,11 @@ DROP VIEW IF EXISTS loserEvents CASCADE;
 DROP VIEW IF EXISTS p1p2Events CASCADE;
 DROP VIEW IF EXISTS playerCountry CASCADE;
 
-COMMIT; -------------------------------------------------
+
 
 
 --Query 9 statements CHECKED
-BEGIN; --------------------------------------------------
+
 CREATE VIEW countryChampions AS
     SELECT 
         C.cname AS cname,
@@ -255,11 +264,11 @@ INSERT INTO query9
     ORDER BY cname DESC;
 
 DROP VIEW IF EXISTS countryChampions CASCADE;
-COMMIT; -------------------------------------------------
 
 
---Query 10 statements UNCHECKED
-BEGIN; --------------------------------------------------
+
+--Query 10 statements CHECKED
+
 
 CREATE VIEW winnerEvents AS
     SELECT 	eid, 
@@ -294,14 +303,14 @@ INSERT INTO query10
         JOIN record R ON P.pid = R.pid
         JOIN p1p2Events E ON P.pid = E.playerid
     WHERE R.wins > R.losses
-    GROUP BY P.pname, E.year 
+    GROUP BY P.pname, R.year 
     HAVING 
         AVG(E.duration) > 200 AND
-        E.year = 2014
+        R.year = 2014
     ORDER BY pname;
 
 
 DROP VIEW IF EXISTS winnerEvents CASCADE;
 DROP VIEW IF EXISTS loserEvents CASCADE;
 DROP VIEW IF EXISTS p1p2Events CASCADE;
-COMMIT; -------------------------------------------------
+
