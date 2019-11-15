@@ -67,7 +67,7 @@ public class Assignment2 {
 			}
 			rs.close();
 
-	    	String sqlText = String.format("INSERT INTO player VALUES (%d, %s, %d, %d)", pid, pname, globalRank, cid);
+	    	String sqlText = String.format("INSERT INTO player VALUES (%d, '%s', %d, %d)", pid, pname, globalRank, cid);
 			sqlUpdate(sqlText);
 
     	} catch (SQLException e) {
@@ -95,9 +95,9 @@ public class Assignment2 {
     public String getCourtInfo(int courtid){
     	try {
 			rs = sqlQuery("SELECT "
-					+ "cname AS courtname,"
-					+ "capacity,"
-					+ "tname AS tournamentname"
+					+ "C.courtname AS courtname,"
+					+ "C.capacity,"
+					+ "T.tname AS tournamentname"
 					+ "FROM court C JOIN tournament T ON C.tid = T.tid"
 					+ "WHERE C.cid = " + courtid);
 			if(rs.next()) {
@@ -122,10 +122,10 @@ public class Assignment2 {
         try {
         	String sqlText = "UPDATE record"
         			+ "SET"
-        			+ "wins = " + wins
+        			+ "wins = " + wins + ","
         			+ "losses = " + losses
         			+ "WHERE"
-        			+ "pid = " + pid
+        			+ "pid = " + pid + "AND"
         			+ "year = " + year;
 			sqlUpdate(sqlText);
 		} catch (SQLException e) {
@@ -159,7 +159,7 @@ public class Assignment2 {
 			;
 			String result = String.format("%s:%d", rs.getString("pname"), rs.getInt("globalrank"));
 			while(rs.next()) {
-				result.concat(String.format("\n%s:%d", rs.getString("pname"), rs.getInt("globalrank")));
+				result = result.concat(String.format("\n%s:%d", rs.getString("pname"), rs.getInt("globalrank")));
 			}
 			rs.close();
 			return result;
@@ -196,10 +196,10 @@ public class Assignment2 {
 					+ "nchampions INTEGER"
 					+ ")");
 			sqlQuery("INSERT INTO championPlayers"
-					+ "SELECT pid, pname, COUNT(year) AS nchampions"
+					+ "SELECT P.pid, P.pname, COUNT(year) AS nchampions"
 					+ "FROM player P JOIN champion C ON P.pid = C.pid"
-					+ "GROUP BY pid, pname"
-					+ "HAVING COUNT(year) >= 1"
+					+ "GROUP BY P.pid, P.pname"
+					+ "HAVING COUNT(C.year) >= 1"
 					+ "ORDER BY ASC");
 		} catch (SQLException e) {
 			return false;
